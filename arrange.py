@@ -51,10 +51,10 @@ def main() -> None:
         "../by-year/year-2017.csv", na_filter=False, thousands=","
     )
 
-    # Get the data
-    ad_text_2015 = year_2015["Ad Text"]
-    ad_text_2016 = year_2016["Ad Text"]
-    ad_text_2017 = year_2017["Ad Text"]
+    # Get the data and randomize it
+    ad_text_2015 = year_2015["Ad Text"].sample(frac=1)
+    ad_text_2016 = year_2016["Ad Text"].sample(frac=1)
+    ad_text_2017 = year_2017["Ad Text"].sample(frac=1)
 
     # Write the data
     # There will be 500 per category since there are 618 in 2015
@@ -103,8 +103,9 @@ def main() -> None:
             ) as file:
                 file.write(f"{text}\n")
 
-    # Randomized copying for testing
+    # Create meta files
     ground_truth = []
+    unknown_texts = []
 
     for j in range(10):
         shutil.copy(
@@ -113,6 +114,7 @@ def main() -> None:
         ground_truth.append(
             {"unknown-text": f"unknown{j}.txt", "true-author": "candidate2015"}
         )
+        unknown_texts.append({"unknown-text": f"unknown{j}.txt"})
 
     for j in range(10, 20):
         shutil.copy(
@@ -121,6 +123,7 @@ def main() -> None:
         ground_truth.append(
             {"unknown-text": f"unknown{j}.txt", "true-author": "candidate2016"}
         )
+        unknown_texts.append({"unknown-text": f"unknown{j}.txt"})
 
     for j in range(20, 30):
         shutil.copy(
@@ -129,11 +132,31 @@ def main() -> None:
         ground_truth.append(
             {"unknown-text": f"unknown{j}.txt", "true-author": "candidate2017"}
         )
+        unknown_texts.append({"unknown-text": f"unknown{j}.txt"})
 
-    os.chdir("..")
     with open("ground-truth.json", "w") as file:
         json.dump({"ground_truth": ground_truth}, file, indent=2)
         file.write("\n")
+
+    with open("meta-file.json", "w") as file:
+        json.dump(
+            {
+                "folder": "unknown",
+                "language": "EN",
+                "encoding": "UTF8",
+                "candidate-authors": [
+                    {"author-name": "candidate2015"},
+                    {"author-name": "candidate2016"},
+                    {"author-name": "candidate2017"},
+                ],
+                "unknown-texts": unknown_texts,
+            },
+            file,
+            indent=2,
+        )
+        file.write("\n")
+
+    os.chdir("..")
 
 
 if __name__ == "__main__":

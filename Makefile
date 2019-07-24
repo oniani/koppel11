@@ -5,7 +5,6 @@ all:
 # Run
 run:
 	python3 arrange.py
-	cp ./meta-file.json ./data
 	mkdir results
 	python3 koppel11.py -i=./data/ -o=./results
 
@@ -19,7 +18,11 @@ clean:
 
 # Show the results
 show:
-	cat ./results/answers.json
+	highlight --force --out-format=ansi ./results/answers.json
+
+# Print the stats
+info:
+	python3 accuracy.py
 
 # Don't display instructions while running
 .SILENT:
