@@ -1,5 +1,0 @@
-#!/bin/bash
-rm -f .DS_Store
-rm -f jsonhandler.pyc
-rm -fr __pycache__
-rm -fr results

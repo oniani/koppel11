@@ -1,0 +1,106 @@
+{
+    "folder": "unknown",
+    "language": "EN",
+    "encoding": "UTF8",
+    "candidate-authors": [{
+            "author-name": "candidate2015"
+        },
+        {
+            "author-name": "candidate2016"
+        },
+        {
+            "author-name": "candidate2017"
+        }
+    ],
+    "unknown-texts": [{
+            "unknown-text": "unknown0.txt"
+        },
+        {
+            "unknown-text": "unknown1.txt"
+        },
+        {
+            "unknown-text": "unknown2.txt"
+        },
+        {
+            "unknown-text": "unknown3.txt"
+        },
+        {
+            "unknown-text": "unknown4.txt"
+        },
+        {
+            "unknown-text": "unknown5.txt"
+        },
+        {
+            "unknown-text": "unknown6.txt"
+        },
+        {
+            "unknown-text": "unknown7.txt"
+        },
+        {
+            "unknown-text": "unknown8.txt"
+        },
+        {
+            "unknown-text": "unknown9.txt"
+        },
+        {
+            "unknown-text": "unknown10.txt"
+        },
+        {
+            "unknown-text": "unknown11.txt"
+        },
+        {
+            "unknown-text": "unknown12.txt"
+        },
+        {
+            "unknown-text": "unknown13.txt"
+        },
+        {
+            "unknown-text": "unknown14.txt"
+        },
+        {
+            "unknown-text": "unknown15.txt"
+        },
+        {
+            "unknown-text": "unknown16.txt"
+        },
+        {
+            "unknown-text": "unknown17.txt"
+        },
+        {
+            "unknown-text": "unknown18.txt"
+        },
+        {
+            "unknown-text": "unknown19.txt"
+        },
+        {
+            "unknown-text": "unknown20.txt"
+        },
+        {
+            "unknown-text": "unknown21.txt"
+        },
+        {
+            "unknown-text": "unknown22.txt"
+        },
+        {
+            "unknown-text": "unknown23.txt"
+        },
+        {
+            "unknown-text": "unknown24.txt"
+        },
+        {
+            "unknown-text": "unknown25.txt"
+        },
+        {
+            "unknown-text": "unknown26.txt"
+        },
+        {
+            "unknown-text": "unknown27.txt"
+        },
+        {
+            "unknown-text": "unknown28.txt"
+        },
+        {
+            "unknown-text": "unknown29.txt"
+        }
+    ]
+}

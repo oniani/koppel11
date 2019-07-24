@@ -1,3 +1,0 @@
-#/bin/bash
-mkdir results
-python3 koppel11.py -i=./data/ -o=./results
