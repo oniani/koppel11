@@ -22,7 +22,7 @@ show:
 
 # Print the stats
 info:
-	python3 accuracy.py
+	python3 info.py
 
 # Don't display instructions while running
 .SILENT:
