@@ -230,24 +230,19 @@ def main():
     jsonhandler.loadTraining()
 
     texts = {}
-    # texts = frozenset() would this work??
     corpus = ""
     print("Loading texts for training...")
     deletes = []
 
     for cand in candidates:
         texts[cand] = ""
-
         for file in jsonhandler.trainings[cand]:
             texts[cand] += jsonhandler.getTrainingText(cand, file)
-            # if frozenset() is used:
-            # texts.add(jsonhandler.getTrainingText(cand, file))
             print(f"Text {file} read")
 
         if len(texts[cand].split()) < MINTRAINLEN:
             del texts[cand]
             deletes.append(cand)
-
         else:
             corpus += texts[cand]
 
@@ -273,7 +268,6 @@ def main():
         if ulen < MINLEN:
             authors.append("None")
             scores.append(0)
-
         else:
             wins = [0] * len(candidates)
             textlen = min(ulen, minwords)
