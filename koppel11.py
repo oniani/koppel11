@@ -1,183 +1,226 @@
-'''-- Jakob Koehler & Tolga Buz
-Reproduction of Koppel11
-'''
-#--- Parameters:
-# n-gram size
-n = 4
-# length of feature list
-featureLength = 20000
-# Score threshold (needed for open set)
-threshold = 0
-# number of k repetitions
-repetitions = 100
-# minimum size of document
-# (increases precision, but deteriorates recall,
-# if there are many small documents)
-minlen = 0
-# candidates with less than this amount of words in trainingdata are not
-# attributed to
-mintrainlen = 500
+"""
+Filename: koppel11.py
+Original Authors: Jakob Koehler and Tolga Buz
 
-#--- Imports:
-from math import sqrt
-import jsonhandler
+Rewritten and reformatted by David Oniani
+Date: 2019-07-24 09:24:02 PM
+E-mail: onianidavid@gmail.com
+
+License:
+    The code is licensed under GNU General Public License v3.0.
+    Please read the LICENSE file in this distribution for details
+    regarding the licensing of this code.
+
+Description:
+    This is an implementation/reproduction of the paper
+    "Authorship attribution in the wild" by Moshe Koppel,
+    Jonathan Schler, and Shlomo Argamon.
+
+    For more information, see the paper: https://bit.ly/2K22ACM
+"""
+
+import math
 import random
 import argparse
-
-#--- Methods:
-'''- create Vector:
-gets a string (e.g. Book), splits it into and returns a vector
-with all possible n-grams/features'''
+import jsonhandler
 
 
-def createVector(s):
-    vector = {}
-    words = s.split()
+# length of feature list
+FEATURE_LENGTH = 20000
+
+# Minimum size of doc (increases precision, decreases recall if many small docs)
+MINLEN = 0
+
+# Less than 500 words in the training data is not attributed
+MINTRAINLEN = 500
+
+# Size of n-gram
+NGRAM_SIZE = 4
+
+# Number of k-repetitions
+REPETITIONS = 100
+
+# Score threshold (needed for open set)
+THRESHOLD = 0
+
+
+def create_vector(string):
+    """Creates a vector out of a string.
+
+    Gets a string (e.g. Book), splits it into and
+    returns a vector with all possible n-grams/features.
+    """
+    vec = {}
+    words = string.split()
+
     for word in words:
-        if len(word) <= n:
-            add(vector, word)
+        if len(word) <= NGRAM_SIZE:
+            add(vec, word)
         else:
-            for i in range(len(word) - n + 1):
-                add(vector, word[i:i + n])
-    return vector
+            for i in range(len(word) - NGRAM_SIZE + 1):
+                add(vec, word[i : i + NGRAM_SIZE])
 
-'''- add:
-adds n-grams to our featurelist-vector, if is not included yet
- (containing all possible n-grams/features)'''
+    return vec
 
 
 def add(vector, ngram):
+    """Adds n-grams to the vector.
+
+    Adds n-grams to our featurelist-vector, if is
+    not included yet (containing all possible
+    n-grams/features).
+    """
     if ngram in vector:
         vector[ngram] += 1
     else:
         vector[ngram] = 1
 
-'''- selectFeatures:
-selects the x most frequent n-grams/features (x=featureLength)
-to avoid a (possibly) too big featurelist'''
+
+def select_features(vec):
+    """Selects most frequent features.
+
+    Selects the x most frequent n-grams/features
+    (x=FEATURE_LENGTH) to avoid a (possibly) too
+    big featurelist.
+    """
+    return sorted(vec, key=vec.get, reverse=True)[
+        : min(len(vec), FEATURE_LENGTH)
+    ]
 
 
-def selectFeatures(vector):
-    return sorted(vector, key=vector.get, reverse=True)[:min(len(vector), featureLength)]
+def create_feature_map(string, features):
+    """Creates a feature map.
 
-'''- createFeatureMap:
-creates Feature Map that only saves
-the features that actually appear more frequently than 0.
-Thus, the featurelist needs less memory and can work faster'''
-
-
-def createFeatureMap(s, features):
+    Creates feature map that only saves
+    the features that actually appear more
+    frequently than 0. Thus, the featurelis
+    tneeds less memory and can work faster.
+    """
     fmap = {}
-    vec = createVector(s)
+    vec = create_vector(string)
+
     for ngram in features:
         if ngram in vec:
             fmap[ngram] = vec[ngram]
+
     return fmap
 
-'''- cosSim:
-calculates cosine similarity of two vectors v1 and v2.
--> cosine(X, Y) = (X * Y)/(|X|*|Y|)
-'''
+
+def cosine_similarity(vec_x, vec_y):
+    """Calculates the cosine similary of two vectors.
+
+    Calculates cosine similarity of two vectors vec_x and vec_y.
+    Formula: cosine(X, Y) = (X * Y)/(|X|*|Y|)
+    """
+    sim_prod = 0.0
+    len_x = 0
+    len_y = 0
+
+    for ngram in vec_x:
+        len_x += vec_x[ngram] ** 2
+
+    for ngram in vec_y:
+        len_y += vec_y[ngram] ** 2
+
+    len_x = math.sqrt(len_x)
+    len_y = math.sqrt(len_y)
+
+    for ngram in vec_x:
+        if ngram in vec_y:
+            sim_prod += vec_x[ngram] * vec_y[ngram]
+
+    return sim_prod / (len_x * len_y)
 
 
-def cosSim(v1, v2):
-    sp = float(0)
-    len1 = 0
-    len2 = 0
-    for ngram in v1:
-        len1 += v1[ngram] ** 2
-    for ngram in v2:
-        len2 += v2[ngram] ** 2
-    len1 = sqrt(len1)
-    len2 = sqrt(len2)
-    for ngram in v1:
-        if ngram in v2:
-            sp += v1[ngram] * v2[ngram]
-    return sp / (len1 * len2)
+def minmax(vec_x, vec_y):
+    """Calculates the minmax similarity of two vectors.
 
-'''- minmax:
-calculates minmax similarity of two vectors v1 and v2.
--> minmax(X, Y) = sum(min(Xi, Yi))/sum(max(Xi, Yi))
+    Calculates minmax similarity of two vectors vec_x and vec_y.
+    Formula: minmax(X, Y) = sum(min(Xi, Yi))/sum(max(Xi, Yi))
 
-This baseline method will be used for further evaluation.
-'''
-
-
-def minmax(v1, v2):
+    This baseline method will be used for further evaluation.
+    """
     minsum = 0
     maxsum = 0
-    for ngram in v1:
-        if ngram in v2:
+
+    for ngram in vec_x:
+        if ngram in vec_y:
             # ngram is in both vectors
-            minsum += min(v1[ngram], v2[ngram])
-            maxsum += max(v1[ngram], v2[ngram])
+            minsum += min(vec_x[ngram], vec_y[ngram])
+            maxsum += max(vec_x[ngram], vec_y[ngram])
         else:
-            # ngram only in v1
-            maxsum += v1[ngram]
-    for ngram in v2:
-        if ngram not in v1:
-            # ngram only in v2
-            maxsum += v2[ngram]
+            # ngram only in vec_x
+            maxsum += vec_x[ngram]
+
+    for ngram in vec_y:
+        if ngram not in vec_x:
+            # ngram only in vec_y
+            maxsum += vec_y[ngram]
+
     if maxsum == 0:
         return 0
+
     return float(minsum) / maxsum
 
-'''- training:
-Turns a given string into a n-gram vector
-and returns its feature list.
-'''
+
+def training(string):
+    """Returns a feature list of the vector from the string.
+
+    Turns a given string into a n-gram vector
+    and returns its feature list.
+    """
+    print("Training...")
+    vec = create_vector(string)
+    print("Selecting features...")
+    feature_list = select_features(vec)
+    print("Done!")
+    return feature_list
 
 
-def training(s):
-    print("training...")
-    vec = createVector(s)
-    print("selecting features...")
-    fl = selectFeatures(vec)
-    print("done")
-    return fl
+def test_sim(vec_x, vec_y, feature_list, func):
+    """Returns the similarity value of two vectors.
 
-'''- testSim:
-args: two vectors, a featurelist
-and func(to decide whether to use cosine or minmax similarity).
+    Args: two vectors, a featurelist and func
+    (to decide whether to use cosine or minmax similarity).
 
-uses createFeatureMap and cosSim or minmax
-and returns the similarity value of the two vectors
-'''
+    Uses create_feature_map and cosine_similarity or minmax and
+    returns the similarity value of the two vectors.
+    """
+    feature_map_x = create_feature_map(vec_x, feature_list)
+    feature_map_y = create_feature_map(vec_y, feature_list)
 
-
-def testSim(x, y, fl, func):
-    fx = createFeatureMap(x, fl)
-    fy = createFeatureMap(y, fl)
     if func == 0:
-        return cosSim(fx, fy)
-    else:
-        return minmax(fx, fy)
+        return cosine_similarity(feature_map_x, feature_map_y)
 
-'''- getRandomString:
-Returns a random part of a string s
-that has a given length
-'''
+    return minmax(feature_map_x, feature_map_y)
 
 
-def getRandomString(s, length):
-    words = s.split()
-    r = random.randint(0, len(words) - length)
-    return "".join(words[r:r + length])
+def get_random_string(string, length):
+    """Returns a random part of a string.
 
-#--- main:
+    Returns a random part of a string s
+    that has a given length.
+    """
+    words = string.split()
+    random_part = random.randint(0, len(words) - length)
+    return "".join(words[random_part : random_part + length])
 
 
 def main():
-    #
+    """The main function."""
     parser = argparse.ArgumentParser(
-        description="Tira submission for PPM approach (koppel11)")
+        description="PPM approach according to Koppel11"
+    )
+
     parser.add_argument("-i", action="store", help="path to corpus directory")
     parser.add_argument("-o", action="store", help="path to output directory")
+
     args = vars(parser.parse_args())
 
     corpusdir = args["i"]
     outputdir = args["o"]
-    if corpusdir == None or outputdir == None:
+
+    if corpusdir is None or outputdir is None:
         parser.print_help()
         return
 
@@ -189,18 +232,22 @@ def main():
     texts = {}
     # texts = frozenset() would this work??
     corpus = ""
-    print("loading texts for training")
+    print("Loading texts for training...")
     deletes = []
+
     for cand in candidates:
         texts[cand] = ""
+
         for file in jsonhandler.trainings[cand]:
             texts[cand] += jsonhandler.getTrainingText(cand, file)
             # if frozenset() is used:
             # texts.add(jsonhandler.getTrainingText(cand, file))
-            print("text " + file + " read")
-        if len(texts[cand].split()) < mintrainlen:
+            print(f"Text {file} read")
+
+        if len(texts[cand].split()) < MINTRAINLEN:
             del texts[cand]
             deletes.append(cand)
+
         else:
             corpus += texts[cand]
 
@@ -208,43 +255,52 @@ def main():
     for cand in candidates:
         if cand not in deletes:
             newcands.append(cand)
+
     candidates = newcands
     words = [len(texts[cand].split()) for cand in texts]
     minwords = min(words)
     print(minwords)
 
-    fl = training(corpus)
+    feature_list = training(corpus)
     authors = []
     scores = []
 
     for file in unknowns:
-        print("testing " + file)
+        print(f"Testing {file}")
         utext = jsonhandler.getUnknownText(file)
         ulen = len(utext.split())
-        if ulen < minlen:
+
+        if ulen < MINLEN:
             authors.append("None")
             scores.append(0)
+
         else:
             wins = [0] * len(candidates)
             textlen = min(ulen, minwords)
             print(textlen)
             ustring = "".join(utext.split()[:textlen])
-            for i in range(repetitions):
-                rfl = random.sample(fl, len(fl) // 2)
+
+            for _ in range(REPETITIONS):
+                rfl = random.sample(feature_list, len(feature_list) // 2)
                 sims = []
                 for cand in candidates:
-                    candstring = getRandomString(texts[cand], textlen)
-                    sims.append(testSim(candstring, ustring, rfl, 1))
+                    candstring = get_random_string(texts[cand], textlen)
+                    sims.append(test_sim(candstring, ustring, rfl, 1))
                 wins[sims.index(max(sims))] += 1
-            score = max(wins) / float(repetitions)
-            if score >= threshold:
+
+            score = max(wins) / float(REPETITIONS)
+
+            if score >= THRESHOLD:
                 authors.append(candidates[wins.index(max(wins))])
                 scores.append(score)
             else:
                 authors.append("None")
                 scores.append(score)
 
-    print("storing answers")
+    print("Storing answers...")
     jsonhandler.storeJson(outputdir, unknowns, authors, scores)
+    print("Done!")
 
-main()
+
+if __name__ == "__main__":
+    main()
