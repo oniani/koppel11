@@ -11,7 +11,7 @@
 # trueAuthors - list of true authors of the texts (from GT_FNAME json)
 # correstponding to 'unknowns'
 
-"""
+'''
 EXAMPLE:
 
 import jsonhandler
@@ -51,7 +51,7 @@ jsonhandler.storeJson(unknowns, authors, scores)
 loadGroundTruth()
 # find out true author of document unknowns[i]:
 # trueAuthors[i]
-"""
+'''
 
 import os
 import json
@@ -75,11 +75,9 @@ def loadJson(corpus):
     upath += os.path.join(corpusdir, metajson["folder"])
     encoding += metajson["encoding"]
     language += metajson["language"]
-    candidates += [
-        author["author-name"] for author in metajson["candidate-authors"]
-    ]
+    candidates += [author["author-name"]
+                   for author in metajson["candidate-authors"]]
     unknowns += [text["unknown-text"] for text in metajson["unknown-texts"]]
-
 
 # run this method next, if you want to do training (read training files etc)
 
@@ -91,7 +89,6 @@ def loadTraining():
             for doc in files:
                 trainings[cand].append(doc)
 
-
 # get training text 'fname' from candidate 'cand' (obtain values from
 # 'trainings', see example above)
 
@@ -102,7 +99,6 @@ def getTrainingText(cand, fname):
     dfile.close()
     return s
 
-
 # get training file as bytearray
 
 
@@ -111,7 +107,6 @@ def getTrainingBytes(cand, fname):
     b = bytearray(dfile.read())
     dfile.close()
     return b
-
 
 # get unknown text 'fname' (obtain values from 'unknowns', see example above)
 
@@ -122,7 +117,6 @@ def getUnknownText(fname):
     dfile.close()
     return s
 
-
 # get unknown file as bytearray
 
 
@@ -132,7 +126,6 @@ def getUnknownBytes(fname):
     dfile.close()
     return b
 
-
 # run this method in the end to store the output in the 'path' directory as OUT_FNAME
 # pass a list of filenames (you can use 'unknowns'), a list of your
 # predicted authors and optionally a list of the scores (both must of
@@ -140,19 +133,15 @@ def getUnknownBytes(fname):
 
 
 def storeJson(path, texts, cands, scores=None):
+    answers = []
     if scores == None:
         scores = [1 for text in texts]
-
-    answers = []
     for i in range(len(texts)):
         answers.append(
-            {"unknown_text": texts[i], "author": cands[i], "score": scores[i]}
-        )
-
-    with open(os.path.join(path, OUT_FNAME), "w") as file:
-        json.dump({"answers": answers}, file, indent=2)
-        file.write("\n")
-
+            {"unknown_text": texts[i], "author": cands[i], "score": scores[i]})
+    f = open(os.path.join(path, OUT_FNAME), "w")
+    json.dump({"answers": answers}, f, indent=2)
+    f.close()
 
 # if you want to evaluate your answers using the ground-truth.json, load
 # the true authors in 'trueAuthors' using this function
@@ -166,7 +155,6 @@ def loadGroundTruth():
     global trueauthors
     for i in range(len(tjson["ground-truth"])):
         trueAuthors.append(tjson["ground-truth"][i]["true-author"])
-
 
 # initialization of global variables
 encoding = ""

@@ -1,12 +1,15 @@
 # Default
 all:
-	make clean && make run
+	make clean && make arrange && make run
+
+# Arrange
+arrange:
+	python3 arrange.py
 
 # Run
 run:
-	python3 arrange.py
 	mkdir results
-	python3 koppel11.py -i=./data/ -o=./results
+	python3 koppel11.py -i=./data/ -o=./results/
 
 # Remove object files and the executable
 clean:

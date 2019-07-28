@@ -20,7 +20,7 @@ def main():
     """The main function"""
     # Get the data
     with open("./data/ground-truth.json") as file:
-        ground_truth = json.load(file)["ground_truth"]
+        ground_truth = json.load(file)["ground-truth"]
 
     with open("./results/answers.json") as file:
         answers = json.load(file)["answers"]
