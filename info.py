@@ -14,6 +14,7 @@ Description:
 """
 
 import json
+import os
 
 
 def main():
@@ -43,21 +44,27 @@ def main():
             )
 
     # Get the number of samples
-    samples = len(ground_truth)
+    testing_samples = len(ground_truth)
+    training_samples = len(os.listdir("./data/candidate2015")) + len(
+        os.listdir("./data/candidate2016")
+    )
 
     # Get the prediction accuracy
-    prediction_accuracy = hit / samples * 100
+    prediction_accuracy = hit / testing_samples * 100
 
     # Get the prediction score
     prediction_score = 0
     for score in scores:
         prediction_score += list(score.values())[0]
-    prediction_score *= 10 / (3 * samples)
+    prediction_accuracy_average = prediction_score / testing_samples * 100
+    prediction_score *= 10 / (3 * testing_samples)
 
     # Print out the results
-    print(f"Number of samples:   {samples}")
-    print(f"Prediction accuracy: {prediction_accuracy:.2f}%")
-    print(f"Prediction score:    {prediction_score:.2f}/10")
+    print(f"Number of testing samples:     {testing_samples}")
+    print(f"Number of training samples:    {training_samples}")
+    print(f"Prediction accuracy (average): {prediction_accuracy_average}")
+    print(f"Prediction accuracy:           {prediction_accuracy:.2f}%")
+    print(f"Prediction score:              {prediction_score:.2f}/10")
 
 
 if __name__ == "__main__":
