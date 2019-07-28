@@ -10,7 +10,8 @@ License:
     regarding the licensing of this code.
 
 Description:
-    Make t
+    Generate data and meta files for koppel11 authorship
+    attribution algorithm.
 """
 
 
